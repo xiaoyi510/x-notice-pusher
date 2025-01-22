@@ -84,3 +84,90 @@ A: 请确保二维码格式正确，包含完整的配置信息（URL、Merchant
    - 其他任何违反法律法规的行为
 4. 使用者需自行承担因违规使用本软件而产生的一切法律责任和后果。
 5. 开发者不对使用者的任何违规行为负责，也不承担任何连带责任。
+# 通知上报接口文档
+
+## 接口概述
+该接口用于上报设备接收到的通知信息到服务器。支持普通模式和个人版模式两种上报方式。
+
+## 接口地址
+
+### 普通模式
+```
+POST {platform_url}/api/report/{merchant_id}?token={secret_key}
+```
+
+### 个人版模式
+```
+POST {platform_url}/api/report/app?pid={merchant_id}&token={secret_key}
+```
+
+## 请求头
+```
+Content-Type: application/json
+X-Merchant-ID: {merchant_id}
+X-Secret-Key: {secret_key}
+```
+
+## 请求参数
+
+### URL参数
+| 参数名      | 类型   | 必填 | 说明   |
+| ----------- | ------ | ---- | ------ |
+| merchant_id | string | 是   | 商户ID |
+| secret_key  | string | 是   | 密钥   |
+
+### 请求体
+```json
+{
+    "from": "android",
+    "content": "{
+        'title': '通知标题',
+        'msg': '通知内容',
+        'package_name': '应用包名',
+        'receive_time': '接收时间',
+        'device_name': '设备名称'
+    }",
+    "timestamp": 1234567890123,
+    "sign": ""
+}
+```
+
+| 字段名    | 类型   | 必填 | 说明                         |
+| --------- | ------ | ---- | ---------------------------- |
+| from      | string | 是   | 来源平台，固定值为"android"  |
+| content   | string | 是   | JSON字符串，包含通知详细信息 |
+| timestamp | number | 是   | 时间戳，毫秒级               |
+| sign      | string | 否   | 签名，当前版本可为空         |
+
+### content字段说明
+| 字段名       | 类型   | 必填 | 说明                                     |
+| ------------ | ------ | ---- | ---------------------------------------- |
+| title        | string | 是   | 通知标题                                 |
+| msg          | string | 是   | 通知内容                                 |
+| package_name | string | 是   | 发送通知的应用包名                       |
+| receive_time | string | 是   | 通知接收时间                             |
+| device_name  | string | 是   | 设备名称，未配置时默认为"Unknown Device" |
+
+## 响应格式
+```json
+{
+    "statusCode": 200,
+    "body": "服务器响应内容",
+    "request_url": "完整请求URL",
+    "request_body": "请求体内容"
+}
+```
+
+| 字段名       | 类型   | 说明             |
+| ------------ | ------ | ---------------- |
+| statusCode   | number | HTTP状态码       |
+| body         | string | 服务器响应内容   |
+| request_url  | string | 完整的请求URL    |
+| request_body | string | 发送的请求体内容 |
+
+## 注意事项
+1. 接口支持普通模式和个人版模式，URL格式略有不同
+2. 请求体中的content字段需要进行JSON序列化
+3. 设备名称从本地配置获取，未配置时默认为"Unknown Device"
+4. 时间戳使用毫秒级时间戳
+5. 当前版本sign字段可为空
